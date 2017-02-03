@@ -1,58 +1,79 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 Read data
-```{r}
+
+```r
 activity<-read.csv("activity.csv")
 ```
 
 Aggregate per day
-```{r}
+
+```r
 activity.day<-aggregate(steps~date,data=activity,sum)
 ```
 
 ## What is mean total number of steps taken per day?
 Plot the total number of steps per day
-```{r}
+
+```r
 library(ggplot2)
 qplot(steps,data=activity.day,bins=15,main="Total number of steps per day",colour=I("white"),fill=I("orange"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 Calculate the mean and the median
-```{r}
+
+```r
 c(mean=mean(activity.day$steps),median=median(activity.day$steps))
+```
+
+```
+##     mean   median 
+## 10766.19 10765.00
 ```
 
 ## What is the average daily activity pattern?
 Aggregate per interval
-```{r}
+
+```r
 activity.int<-aggregate(steps~interval,data=activity,mean)
 ```
 
 Plot the average number of steps per interval
-```{r}
+
+```r
 with(activity.int,plot(interval,steps,type="l",main="Average number of steps per interval"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 Calculate the interval with maximum average of steps
-```{r}
+
+```r
 activity.int[activity.int$steps==max(activity.int$steps),1]
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 Number of NAs
-```{r}
+
+```r
 sum(is.na(activity$steps))
 ```
 
+```
+## [1] 2304
+```
+
 Create a new dataset with the missing values filled in with the average value of that interval
-```{r}
+
+```r
 activity.new=read.csv("activity.csv")
 for (i in 1:nrow(activity.new)){
   if(is.na(activity.new$steps[i])){
@@ -62,24 +83,35 @@ for (i in 1:nrow(activity.new)){
 ```
 
 Aggregate per day
-```{r}
+
+```r
 activity.new.day<-aggregate(steps~date,data=activity.new,sum)
 ```
 
 Plot total number of steps per day with the new dataset
-```{r}
+
+```r
 library(ggplot2)
 qplot(steps,data=activity.new.day,bins=15,main="Total number of steps per day",colour=I("white"),fill=I("dark red"))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
 Calculate mean and median of the total steps taken per day
-```{r}
+
+```r
 c(mean=mean(activity.new.day$steps),median=median(activity.new.day$steps))
+```
+
+```
+##     mean   median 
+## 10766.19 10766.19
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 Add column weekday/weekend
-```{r}
+
+```r
 activity.new$weekday<-weekdays(as.Date(as.character(activity.new$date)))
 for (i in 1:nrow(activity.new)){
   if(activity.new$weekday[i] %in% c("lunes","martes","mi?rcoles","jueves","viernes")){
@@ -92,18 +124,43 @@ for (i in 1:nrow(activity.new)){
 ```
 
 Change to a factor variable
-```{r}
+
+```r
 activity.new$weekday<-as.factor(activity.new$weekday)
 ```
 
 Aggregate per interval and weekday/weekend
-```{r}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 activity.new.int<-summarise(group_by(activity.new,interval,weekday),avg.steps=mean(steps))
 ```
 
 Panel plot with the average number of steps per interval
-```{r}
+
+```r
 library(lattice)
 with(activity.new.int,xyplot(avg.steps~interval|weekday,layout=c(1,2),type="l"))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
